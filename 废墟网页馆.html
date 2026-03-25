@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>废墟网页馆</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", sans-serif;
+        }
+
+        body {
+            background: #1a1a1a;
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .game-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #2b2b2b;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        .title {
+            text-align: center;
+            font-size: 28px;
+            color: #ffcc00;
+            margin-bottom: 5px;
+            text-shadow: 0 0 5px #000;
+        }
+
+        .author {
+            text-align: center;
+            color: #81c784;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .tip {
+            text-align: center;
+            color: #aaa;
+            margin: 0 0 20px;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .battle-area {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            gap: 20px;
+        }
+
+        .player-area, .enemy-area {
+            width: 48%;
+            background: #383838;
+            border-radius: 8px;
+            padding: 15px;
+        }
+
+        .area-title {
+            font-size: 20px;
+            margin-bottom: 10px;
+            color: #4fc3f7;
+        }
+
+        .hp-bar {
+            height: 30px;
+            background: #444;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .hp-fill {
+            height: 100%;
+            background: linear-gradient(to right, #e53935, #f44336);
+            transition: width 0.5s ease;
+            width: 100%;
+        }
+
+        .hp-text {
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .defense-show {
+            text-align: center;
+            margin: 5px 0;
+            font-size: 15px;
+            font-weight: bold;
+            color: #64b5f6;
+        }
+
+        .effect {
+            text-align: center;
+            margin: 5px 0;
+            font-size: 15px;
+            font-weight: bold;
+        }
+
+        .burn-effect {
+            color: #ff9800;
+        }
+
+        .play-area {
+            min-height: 140px;
+            margin-top: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .hand-area {
+            background: #333;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .hand-title {
+            font-size: 18px;
+            color: #81c784;
+            margin-bottom: 15px;
+        }
+
+        .hand-cards {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            min-height: 150px;
+        }
+
+        /* 卡牌样式 */
+        .card {
+            width: 90px;
+            height: 130px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            border: 3px solid #fff;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: #ffeb3b;
+        }
+
+        .card:disabled {
+            cursor: not-allowed;
+            transform: none;
+            opacity: 0.7;
+        }
+
+        /* 7种卡牌颜色 */
+        .attack-card {
+            background: #ffebee;
+            color: #c62828;
+            border-color: #ef5350;
+        }
+
+        .defend-card {
+            background: #e3f2fd;
+            color: #1565c0;
+            border-color: #64b5f6;
+        }
+
+        .heal-card {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border-color: #66bb6a;
+        }
+
+        .burn-card {
+            background: #fff3e0;
+            color: #e65100;
+            border-color: #ff9800;
+        }
+
+        .dice-card {
+            background: #f3e5f5;
+            color: #7b1fa2;
+            border-color: #ba68c8;
+        }
+
+        /* 神话特殊卡 - 金色特效 */
+        .legend-card {
+            background: linear-gradient(45deg, #fff176, #ffd700, #fff176);
+            color: #b71c1c;
+            border-color: #ff5722;
+            animation: glow 1.5s infinite alternate;
+        }
+
+        /* 净化特殊卡 - 青色特效 */
+        .purify-card {
+            background: linear-gradient(45deg, #e0f7fa, #80deea, #e0f7fa);
+            color: #006064;
+            border-color: #00bcd4;
+            animation: glowBlue 1.5s infinite alternate;
+        }
+
+        @keyframes glow {
+            from { box-shadow: 0 0 10px #ffd700; }
+            to { box-shadow: 0 0 25px #ff5722; }
+        }
+
+        @keyframes glowBlue {
+            from { box-shadow: 0 0 10px #80deea; }
+            to { box-shadow: 0 0 25px #00bcd4; }
+        }
+
+        .card-number {
+            font-size: 28px;
+        }
+
+        .card-type {
+            font-size: 12px;
+            margin-top: 4px;
+            text-align: center;
+            line-height: 1.2;
+        }
+
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 12px 24px;
+            font-size: 16px;
+            border: none;
+            border-radius: 6px;
+            background: #ff9800;
+            color: white;
+            cursor: pointer;
+            transition: 0.2s;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background: #fb8c00;
+            transform: scale(1.05);
+        }
+
+        button:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .round-info {
+            text-align: center;
+            font-size: 17px;
+            margin: 15px 0;
+            min-height: 40px;
+            color: #ffeb3b;
+            line-height: 1.4;
+            white-space: pre-wrap;
+        }
+
+        .game-over {
+            text-align: center;
+            font-size: 24px;
+            color: #e53935;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1 class="title">废墟网页馆</h1>
+        <div class="author">作者：regen</div>
+        <div class="tip">7种卡牌 | 每回合抽5选1 | 盾抵挡烧伤 | 2种稀有神话卡</div>
+        
+        <!-- 对战区域 -->
+        <div class="battle-area">
+            <!-- 玩家 -->
+            <div class="player-area">
+                <div class="area-title">你的角色</div>
+                <div class="hp-bar">
+                    <div class="hp-fill" id="playerHpFill"></div>
+                </div>
+                <div class="hp-text" id="playerHp">100</div>
+                <div class="defense-show" id="playerDef">🛡️ 护盾: 0</div>
+                <div class="effect burn-effect" id="playerBurn">🔥 烧伤: 0</div>
+                <div class="play-area" id="playerPlayArea">
+                    <div style="color:#aaa">选择手牌打出</div>
+                </div>
+            </div>
+
+            <!-- 敌人 -->
+            <div class="enemy-area">
+                <div class="area-title">敌方角色</div>
+                <div class="hp-bar">
+                    <div class="hp-fill" id="enemyHpFill"></div>
+                </div>
+                <div class="hp-text" id="enemyHp">100</div>
+                <div class="defense-show" id="enemyDef">🛡️ 护盾: 0</div>
+                <div class="effect burn-effect" id="enemyBurn">🔥 烧伤: 0</div>
+                <div class="play-area" id="enemyPlayArea">
+                    <div style="color:#aaa">等待出牌</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 玩家手牌区域 -->
+        <div class="hand-area">
+            <div class="hand-title">你的手牌（选择1张打出）</div>
+            <div class="hand-cards" id="handCards"></div>
+        </div>
+
+        <!-- 回合信息 -->
+        <div class="round-info" id="roundInfo">点击【开始回合】抽牌！</div>
+        
+        <!-- 游戏结束 -->
+        <div class="game-over" id="gameOver"></div>
+
+        <!-- 按钮 -->
+        <div class="btn-group">
+            <button id="startRoundBtn">开始回合</button>
+            <button id="resetBtn">重新开始</button>
+        </div>
+    </div>
+
+    <script>
+        // 游戏核心数据
+        const game = {
+            playerHp: 100, enemyHp: 100,
+            playerDef: 0, enemyDef: 0,
+            playerBurn: 0, enemyBurn: 0,
+            isGameOver: false,
+            currentHand: [],
+            playerCard: null, enemyCard: null
+        };
+
+        // DOM元素
+        const playerHpEl = document.getElementById('playerHp');
+        const enemyHpEl = document.getElementById('enemyHp');
+        const playerHpFill = document.getElementById('playerHpFill');
+        const enemyHpFill = document.getElementById('enemyHpFill');
+        const playerDefEl = document.getElementById('playerDef');
+        const enemyDefEl = document.getElementById('enemyDef');
+        const playerBurnEl = document.getElementById('playerBurn');
+        const enemyBurnEl = document.getElementById('enemyBurn');
+        const playerPlayArea = document.getElementById('playerPlayArea');
+        const enemyPlayArea = document.getElementById('enemyPlayArea');
+        const handCardsEl = document.getElementById('handCards');
+        const roundInfo = document.getElementById('roundInfo');
+        const gameOverEl = document.getElementById('gameOver');
+        const startRoundBtn = document.getElementById('startRoundBtn');
+        const resetBtn = document.getElementById('resetBtn');
+
+        // 生成卡牌：8%稀有卡概率
+        function generateCard() {
+            const rand = Math.random();
+            
+            // 8%概率出稀有卡（二选一）
+            if (rand < 0.08) {
+                const legendRand = Math.random();
+                // 50%命运审判 / 50%净化
+                if (legendRand < 0.5) {
+                    return { type: 'legend', name: '命运审判' };
+                } else {
+                    return { type: 'purify', name: '净化' };
+                }
+            }
+            
+            // 92%普通卡
+            const types = ['attack', 'defend', 'heal', 'burn', 'dice'];
+            const type = types[Math.floor(Math.random() * types.length)];
+            
+            switch(type) {
+                case 'attack':
+                    return { type: 'attack', point: Math.floor(Math.random()*20)+1, name: '攻击' };
+                case 'defend':
+                    return { type: 'defend', point: Math.floor(Math.random()*18)+2, name: '防御' };
+                case 'heal':
+                    return { type: 'heal', point: Math.floor(Math.random()*30)+1, name: '回血' };
+                case 'burn':
+                    return { type: 'burn', point: Math.floor(Math.random()*8)+3, name: '烧伤' };
+                case 'dice':
+                    const min = Math.floor(Math.random()*3)+1;
+                    const max = min + Math.floor(Math.random()*5)+2;
+                    const rolls = Math.floor(Math.random()*3)+2;
+                    return { type: 'dice', min, max, rolls, name: '骰子' };
+            }
+        }
+
+        // 渲染卡牌
+        function renderCard(card, isPlayable = true) {
+            const cardEl = document.createElement('button');
+            cardEl.className = `card ${card.type}-card`;
+            cardEl.disabled = !isPlayable;
+            
+            let numText = '';
+            if (card.type === 'legend' || card.type === 'purify') {
+                numText = '???';
+            } else if (card.type === 'dice') {
+                numText = `${card.min}-${card.max}×${card.rolls}`;
+            } else {
+                numText = card.point;
+            }
+            
+            cardEl.innerHTML = `
+                <div class="card-number">${numText}</div>
+                <div class="card-type">${card.name}</div>
+            `;
+            
+            if (isPlayable) cardEl.addEventListener('click', () => playCard(card));
+            return cardEl;
+        }
+
+        // 渲染手牌
+        function renderHand() {
+            handCardsEl.innerHTML = '';
+            game.currentHand.forEach(card => handCardsEl.appendChild(renderCard(card, true)));
+        }
+
+        // 渲染打出的牌
+        function renderPlayedCard(area, card) {
+            area.innerHTML = '';
+            if (card) area.appendChild(renderCard(card, false));
+        }
+
+        // 更新全部界面
+        function updateUI() {
+            playerHpEl.textContent = game.playerHp;
+            enemyHpEl.textContent = game.enemyHp;
+            playerHpFill.style.width = `${Math.max(0, game.playerHp)}%`;
+            enemyHpFill.style.width = `${Math.max(0, game.enemyHp)}%`;
+            
+            playerDefEl.textContent = `🛡️ 护盾: ${game.playerDef}`;
+            enemyDefEl.textContent = `🛡️ 护盾: ${game.enemyDef}`;
+            playerBurnEl.textContent = `🔥 烧伤: ${game.playerBurn}`;
+            enemyBurnEl.textContent = `🔥 烧伤: ${game.enemyBurn}`;
+        }
+
+        // 检查游戏结束
+        function checkGameOver() {
+            if (game.playerHp <= 0) {
+                game.isGameOver = true;
+                gameOverEl.textContent = '💀 你输了！';
+            } else if (game.enemyHp <= 0) {
+                game.isGameOver = true;
+                gameOverEl.textContent = '🎉 你赢了！';
+            }
+            if (game.isGameOver) startRoundBtn.disabled = true;
+            return game.isGameOver;
+        }
+
+        // 开始回合
+        function startRound() {
+            if (game.isGameOver) return;
+            
+            game.playerDef = game.enemyDef = 0;
+            
+            game.playerCard = game.enemyCard = null;
+            playerPlayArea.innerHTML = '<div style="color:#aaa">选择手牌</div>';
+            enemyPlayArea.innerHTML = '<div style="color:#aaa">敌方抽牌中...</div>';
+            roundInfo.textContent = '请选择一张卡牌打出！';
+            
+            game.currentHand = Array(5).fill(0).map(() => generateCard());
+            renderHand();
+            startRoundBtn.disabled = true;
+            updateUI();
+        }
+
+        // 玩家出牌
+        function playCard(card) {
+            game.playerCard = card;
+            renderPlayedCard(playerPlayArea, card);
+            handCardsEl.innerHTML = '<div style="color:#aaa">已出牌，等待敌方...</div>';
+            setTimeout(enemyPlay, 700);
+        }
+
+        // 敌方出牌
+        function enemyPlay() {
+            game.enemyCard = generateCard();
+            renderPlayedCard(enemyPlayArea, game.enemyCard);
+            setTimeout(calculateRound, 700);
+        }
+
+        // 核心结算
+        function calculateRound() {
+            const p = game.playerCard;
+            const e = game.enemyCard;
+            let msg = '';
+
+            // =============== 玩家卡牌效果 ===============
+            if (p.type === 'heal') {
+                game.playerHp = Math.min(100, game.playerHp + p.point);
+                msg += `❤️ 你恢复 ${p.point} 血量！`;
+            }
+            if (p.type === 'defend') {
+                game.playerDef += p.point;
+                msg += `🛡️ 获得 ${p.point} 点护盾！`;
+            }
+            if (p.type === 'burn') {
+                game.enemyBurn = Math.max(game.enemyBurn, p.point);
+                msg += `🔥 敌人获得 ${p.point} 层烧伤！`;
+            }
+            if (p.type === 'dice') {
+                let total = 0, details = [];
+                for(let i=0;i<p.rolls;i++){
+                    const rng = Math.floor(Math.random()*(p.max-p.min+1)) + p.min;
+                    details.push(rng); total+=rng;
+                }
+                game.enemyHp -= total;
+                msg += `🎲 骰子伤害(${details.join('+')})=${total}！`;
+            }
+            // 神话卡：命运审判
+            if (p.type === 'legend') {
+                const luck = Math.random();
+                if (luck < 0.1) {
+                    game.enemyHp = 0;
+                    msg += '⚡【命运审判】成功！直接秒杀敌人！';
+                } else {
+                    game.playerHp -= 80;
+                    msg += '💀【命运审判】失败！自身损失80点血量！';
+                }
+            }
+            // 新增：净化卡 - 清除烧伤+回血20
+            if (p.type === 'purify') {
+                game.playerBurn = 0;
+                game.playerHp = Math.min(100, game.playerHp + 20);
+                msg += '✅【净化】成功！清除所有烧伤，恢复20血量！';
+            }
+
+            // =============== 敌方卡牌效果 ===============
+            if (e.type === 'heal') {
+                game.enemyHp = Math.min(100, game.enemyHp + e.point);
+                msg += `❤️ 敌人恢复 ${e.point} 血量！`;
+            }
+            if (e.type === 'defend') {
+                game.enemyDef += e.point;
+                msg += `🛡️ 敌人获得 ${e.point} 点护盾！`;
+            }
+            if (e.type === 'burn') {
+                game.playerBurn = Math.max(game.playerBurn, e.point);
+                msg += `🔥 你获得 ${e.point} 层烧伤！`;
+            }
+            if (e.type === 'dice') {
+                let total = 0, details = [];
+                for(let i=0;i<e.rolls;i++){
+                    const rng = Math.floor(Math.random()*(e.max-e.min+1)) + e.min;
+                    details.push(rng); total+=rng;
+                }
+                game.playerHp -= total;
+                msg += `🎲 受到骰子伤害(${details.join('+')})=${total}！`;
+            }
+            if (e.type === 'legend') {
+                const luck = Math.random();
+                if (luck < 0.1) {
+                    game.playerHp = 0;
+                    msg += '⚡敌人使用【命运审判】秒杀你！';
+                } else {
+                    game.enemyHp -= 80;
+                    msg += '💀敌人【命运审判】失败，自扣80血！';
+                }
+            }
+            if (e.type === 'purify') {
+                game.enemyBurn = 0;
+                game.enemyHp = Math.min(100, game.enemyHp + 20);
+                msg += '✅敌人使用【净化】清除烧伤+回血20！';
+            }
+
+            // 基础攻击拼点
+            const pAtk = p.type === 'attack' ? p.point : 0;
+            const eAtk = e.type === 'attack' ? e.point : 0;
+
+            const pTaken = Math.max(0, eAtk - game.playerDef);
+            const eTaken = Math.max(0, pAtk - game.enemyDef);
+
+            game.playerHp -= pTaken;
+            game.enemyHp -= eTaken;
+
+            if (pTaken > 0) msg += `⚔️ 受到 ${pTaken} 点伤害！`;
+            if (eTaken > 0) msg += `⚔️ 敌人受到 ${eTaken} 点伤害！`;
+
+            roundInfo.textContent = msg;
+            updateUI();
+            if (checkGameOver()) return;
+
+            // 回合结束 → 烧伤结算
+            setTimeout(applyBurnEffect, 1300);
+        }
+
+        // 烧伤机制：盾抵挡烧伤
+        function applyBurnEffect() {
+            let burnMsg = '';
+            
+            if (game.playerBurn > 0) {
+                const burnDmg = game.playerBurn;
+                const actualDmg = Math.max(0, burnDmg - game.playerDef);
+                game.playerDef = Math.max(0, game.playerDef - burnDmg);
+                game.playerHp -= actualDmg;
+                burnMsg += `🔥 烧伤${burnDmg}点，盾抵挡${burnDmg-actualDmg}，受到${actualDmg}伤害！`;
+                game.playerBurn = Math.max(0, game.playerBurn - 1);
+            }
+            
+            if (game.enemyBurn > 0) {
+                const burnDmg = game.enemyBurn;
+                const actualDmg = Math.max(0, burnDmg - game.enemyDef);
+                game.enemyDef = Math.max(0, game.enemyDef - burnDmg);
+                game.enemyHp -= actualDmg;
+                burnMsg += `🔥 敌人烧伤${burnDmg}点，盾抵挡${burnDmg-actualDmg}，受到${actualDmg}伤害！`;
+                game.enemyBurn = Math.max(0, game.enemyBurn - 1);
+            }
+
+            if (burnMsg) {
+                roundInfo.textContent += '\n' + burnMsg;
+                updateUI();
+            }
+
+            if (checkGameOver()) return;
+
+            setTimeout(() => {
+                startRoundBtn.disabled = false;
+                roundInfo.textContent += '\n→ 点击【开始回合】继续';
+            }, 1000);
+        }
+
+        // 重置游戏
+        function resetGame() {
+            game.playerHp = game.enemyHp = 100;
+            game.playerDef = game.enemyDef = 0;
+            game.playerBurn = game.enemyBurn = 0;
+            game.isGameOver = false;
+            game.currentHand = [];
+            
+            handCardsEl.innerHTML = '';
+            playerPlayArea.innerHTML = '<div style="color:#aaa">选择手牌打出</div>';
+            enemyPlayArea.innerHTML = '<div style="color:#aaa">等待出牌</div>';
+            roundInfo.textContent = '点击【开始回合】抽牌！';
+            gameOverEl.textContent = '';
+            startRoundBtn.disabled = false;
+            updateUI();
+        }
+
+        // 绑定事件
+        startRoundBtn.addEventListener('click', startRound);
+        resetBtn.addEventListener('click', resetGame);
+        updateUI();
+    </script>
+</body>
+</html>
