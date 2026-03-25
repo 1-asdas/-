@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>废墟网页馆</title>
+    <title>废墟网页馆 - 邵角色模式</title>
     <style>
         * {
             margin: 0;
@@ -49,6 +49,29 @@
             margin: 0 0 20px;
             font-size: 14px;
             line-height: 1.4;
+        }
+
+        .role-select {
+            text-align: center;
+            margin: 15px 0;
+        }
+        .role-btn {
+            padding: 10px 20px;
+            margin: 0 10px;
+            font-size: 16px;
+            border: none;
+            border-radius: 6px;
+            background: #4fc3f7;
+            color: white;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .role-btn.active {
+            background: #ff9800;
+            box-shadow: 0 0 15px #ff9800;
+        }
+        .role-btn:hover {
+            transform: translateY(-3px);
         }
 
         .battle-area {
@@ -141,7 +164,6 @@
             min-height: 150px;
         }
 
-        /* 卡牌样式 */
         .card {
             width: 90px;
             height: 130px;
@@ -155,6 +177,8 @@
             transition: 0.2s;
             box-shadow: 0 4px 8px rgba(0,0,0,0.3);
             border: 3px solid #fff;
+            position: relative;
+            overflow: hidden;
         }
 
         .card:hover {
@@ -168,7 +192,6 @@
             opacity: 0.7;
         }
 
-        /* 7种卡牌颜色 */
         .attack-card {
             background: #ffebee;
             color: #c62828;
@@ -199,7 +222,6 @@
             border-color: #ba68c8;
         }
 
-        /* 神话特殊卡 - 金色特效 */
         .legend-card {
             background: linear-gradient(45deg, #fff176, #ffd700, #fff176);
             color: #b71c1c;
@@ -207,12 +229,18 @@
             animation: glow 1.5s infinite alternate;
         }
 
-        /* 净化特殊卡 - 青色特效 */
         .purify-card {
             background: linear-gradient(45deg, #e0f7fa, #80deea, #e0f7fa);
             color: #006064;
             border-color: #00bcd4;
             animation: glowBlue 1.5s infinite alternate;
+        }
+
+        .shao-card {
+            background: linear-gradient(45deg, #ff5252, #ff1744, #ff5252);
+            color: #fff;
+            border-color: #ffeb3b;
+            animation: glowRed 1.5s infinite alternate;
         }
 
         @keyframes glow {
@@ -225,6 +253,11 @@
             to { box-shadow: 0 0 25px #00bcd4; }
         }
 
+        @keyframes glowRed {
+            from { box-shadow: 0 0 10px #ff1744; }
+            to { box-shadow: 0 0 25px #ffeb3b; }
+        }
+
         .card-number {
             font-size: 28px;
         }
@@ -234,6 +267,39 @@
             margin-top: 4px;
             text-align: center;
             line-height: 1.2;
+        }
+
+        /* 邵卡牌悬浮提示样式 */
+        .shao-card .card-name {
+            font-size: 16px;
+            text-align: center;
+            padding: 0 5px;
+        }
+        
+        .shao-card .card-details {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            color: #fff;
+            padding: 10px;
+            font-size: 11px;
+            line-height: 1.3;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            text-align: center;
+            z-index: 10;
+        }
+        
+        .shao-card:hover .card-details {
+            display: flex;
+        }
+        
+        .shao-card:hover .card-name {
+            display: none;
         }
 
         .btn-group {
@@ -283,17 +349,55 @@
             margin: 20px 0;
             font-weight: bold;
         }
+
+        /* 新增：邵角色台词样式 */
+        .shao-dialogue {
+            text-align: center;
+            font-family: "KaiTi", "STKaiti", serif;
+            font-style: italic;
+            font-weight: bold;
+            color: #f5e7b8; /* 米黄色 */
+            font-size: 18px;
+            margin: 10px 0;
+            min-height: 30px;
+        }
+
+        /* 新增：战斗开始逐字显示文本容器 */
+        .battle-start-text {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: "KaiTi", "STKaiti", serif;
+            font-style: italic;
+            font-weight: bold;
+            color: #f5e7b8; /* 米黄色 */
+            font-size: 22px;
+            text-align: center;
+            z-index: 999;
+            text-shadow: 0 0 10px rgba(0,0,0,0.8);
+            padding: 20px;
+            background: rgba(0,0,0,0.7);
+            border-radius: 10px;
+            max-width: 80%;
+        }
     </style>
 </head>
 <body>
     <div class="game-container">
-        <h1 class="title">废墟网页馆</h1>
-        <div class="author">作者：regen</div>
-        <div class="tip">7种卡牌 | 每回合抽5选1 | 盾抵挡烧伤 | 2种稀有神话卡</div>
+        <h1 class="title">废墟网页馆 - 邵角色模式</h1>
+        <div class="author">作者：regen | 新增角色：邵</div>
+        <div class="tip">7种基础卡牌 + 邵专属9种卡牌 | 邵：70血 | 敌方无烧伤上限 | 每回合抽5选1</div>
         
-        <!-- 对战区域 -->
+        <div class="role-select">
+            <button class="role-btn" id="defaultRoleBtn">默认角色 (100血)</button>
+            <button class="role-btn" id="shaoRoleBtn">角色：邵 (70血 | 敌方无烧伤上限)</button>
+        </div>
+        
+        <!-- 新增：邵角色台词显示区域 -->
+        <div class="shao-dialogue" id="shaoDialogue"></div>
+        
         <div class="battle-area">
-            <!-- 玩家 -->
             <div class="player-area">
                 <div class="area-title">你的角色</div>
                 <div class="hp-bar">
@@ -307,7 +411,6 @@
                 </div>
             </div>
 
-            <!-- 敌人 -->
             <div class="enemy-area">
                 <div class="area-title">敌方角色</div>
                 <div class="hp-bar">
@@ -322,344 +425,639 @@
             </div>
         </div>
 
-        <!-- 玩家手牌区域 -->
         <div class="hand-area">
             <div class="hand-title">你的手牌（选择1张打出）</div>
             <div class="hand-cards" id="handCards"></div>
         </div>
 
-        <!-- 回合信息 -->
-        <div class="round-info" id="roundInfo">点击【开始回合】抽牌！</div>
+        <div class="round-info" id="roundInfo">请先选择角色，再点击【开始回合】抽牌！</div>
         
-        <!-- 游戏结束 -->
         <div class="game-over" id="gameOver"></div>
 
-        <!-- 按钮 -->
         <div class="btn-group">
-            <button id="startRoundBtn">开始回合</button>
+            <button id="startRoundBtn" disabled>开始回合</button>
             <button id="resetBtn">重新开始</button>
         </div>
     </div>
 
     <script>
-        // 游戏核心数据
-        const game = {
-            playerHp: 100, enemyHp: 100,
-            playerDef: 0, enemyDef: 0,
-            playerBurn: 0, enemyBurn: 0,
-            isGameOver: false,
-            currentHand: [],
-            playerCard: null, enemyCard: null
-        };
+        document.addEventListener('DOMContentLoaded', function() {
+            const game = {
+                playerHp: 100, enemyHp: 100,
+                playerDef: 0, enemyDef: 0,
+                playerBurn: 0, enemyBurn: 0,
+                isGameOver: false,
+                currentHand: [],
+                playerCard: null, enemyCard: null,
+                selectedRole: null,
+                enemyNextBurn: 0,
+                biAnDefBurn: 0
+            };
 
-        // DOM元素
-        const playerHpEl = document.getElementById('playerHp');
-        const enemyHpEl = document.getElementById('enemyHp');
-        const playerHpFill = document.getElementById('playerHpFill');
-        const enemyHpFill = document.getElementById('enemyHpFill');
-        const playerDefEl = document.getElementById('playerDef');
-        const enemyDefEl = document.getElementById('enemyDef');
-        const playerBurnEl = document.getElementById('playerBurn');
-        const enemyBurnEl = document.getElementById('enemyBurn');
-        const playerPlayArea = document.getElementById('playerPlayArea');
-        const enemyPlayArea = document.getElementById('enemyPlayArea');
-        const handCardsEl = document.getElementById('handCards');
-        const roundInfo = document.getElementById('roundInfo');
-        const gameOverEl = document.getElementById('gameOver');
-        const startRoundBtn = document.getElementById('startRoundBtn');
-        const resetBtn = document.getElementById('resetBtn');
+            const playerHpEl = document.getElementById('playerHp');
+            const enemyHpEl = document.getElementById('enemyHp');
+            const playerHpFill = document.getElementById('playerHpFill');
+            const enemyHpFill = document.getElementById('enemyHpFill');
+            const playerDefEl = document.getElementById('playerDef');
+            const enemyDefEl = document.getElementById('enemyDef');
+            const playerBurnEl = document.getElementById('playerBurn');
+            const enemyBurnEl = document.getElementById('enemyBurn');
+            const playerPlayArea = document.getElementById('playerPlayArea');
+            const enemyPlayArea = document.getElementById('enemyPlayArea');
+            const handCardsEl = document.getElementById('handCards');
+            const roundInfo = document.getElementById('roundInfo');
+            const gameOverEl = document.getElementById('gameOver');
+            const startRoundBtn = document.getElementById('startRoundBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const defaultRoleBtn = document.getElementById('defaultRoleBtn');
+            const shaoRoleBtn = document.getElementById('shaoRoleBtn');
+            // 新增：邵台词显示元素
+            const shaoDialogue = document.getElementById('shaoDialogue');
 
-        // 生成卡牌：8%稀有卡概率
-        function generateCard() {
-            const rand = Math.random();
-            
-            // 8%概率出稀有卡（二选一）
-            if (rand < 0.08) {
-                const legendRand = Math.random();
-                // 50%命运审判 / 50%净化
-                if (legendRand < 0.5) {
-                    return { type: 'legend', name: '命运审判' };
+            // 新增：邵角色命中时的台词列表
+            const shaoHitLines = [
+                "我大可埋骨于此。但你们必须将自身性命置于首位。",
+                "正因如此，燃尽我身才足以作为我曾活过的证明。",
+                "不管不顾地胡乱挥刀，怎么可能还冷静。",
+                "一旦亲身遭遇却无论如何都无法割舍，我唾弃这样的自己。",
+                "然而，若是能够坚定不移地前行，终将踏上正确的道路。不见前路，绝非穷途末路。"
+            ];
+
+            // 新增：战斗开始逐字显示文本
+            const battleStartText = '我纵茕茕孑立，难避漫漫长夜。然长夜终尽，天将启明……惟以平旦之孤星，何胜东方之既白。还请觉悟。今朝此日，都市一星，势必陨灭。';
+
+            // 新增：逐字显示文本函数
+            function typeWriterEffect(text, speed = 50, callback) {
+                const textEl = document.createElement('div');
+                textEl.className = 'battle-start-text';
+                document.body.appendChild(textEl);
+                
+                let i = 0;
+                textEl.textContent = '';
+                
+                function typeChar() {
+                    if (i < text.length) {
+                        textEl.textContent += text.charAt(i);
+                        i++;
+                        setTimeout(typeChar, speed);
+                    } else {
+                        // 显示完成后3秒消失
+                        setTimeout(() => {
+                            textEl.style.opacity = '0';
+                            textEl.style.transition = 'opacity 1s ease';
+                            setTimeout(() => {
+                                document.body.removeChild(textEl);
+                                if (callback) callback();
+                            }, 1000);
+                        }, 3000);
+                    }
+                }
+                typeChar();
+            }
+
+            // 新增：邵台词逐字显示函数
+            function typeShaoDialogue(text, speed = 80, stayTime = 10000) {
+                if (game.selectedRole !== 'shao') return;
+                
+                // 清空原有内容
+                shaoDialogue.textContent = '';
+                let i = 0;
+                
+                function typeChar() {
+                    if (i < text.length) {
+                        shaoDialogue.textContent += text.charAt(i);
+                        i++;
+                        setTimeout(typeChar, speed);
+                    } else {
+                        // 显示完成后停留指定时间（默认10秒）后清空
+                        setTimeout(() => {
+                            // 渐变消失效果
+                            shaoDialogue.style.opacity = '0';
+                            shaoDialogue.style.transition = 'opacity 1s ease';
+                            setTimeout(() => {
+                                shaoDialogue.textContent = '';
+                                shaoDialogue.style.opacity = '1';
+                                shaoDialogue.style.transition = 'none';
+                            }, 1000);
+                        }, stayTime);
+                    }
+                }
+                typeChar();
+            }
+
+            // 新增：随机显示邵命中台词（逐字显示版）
+            function showShaoHitLine() {
+                if (game.selectedRole !== 'shao') return;
+                // 50%概率触发台词
+                if (Math.random() > 0.5) {
+                    const randomLine = shaoHitLines[Math.floor(Math.random() * shaoHitLines.length)];
+                    // 逐字显示，停留10秒（可调整第二个参数控制打字速度，第三个参数控制停留时间）
+                    typeShaoDialogue(randomLine, 80, 10000);
+                }
+            }
+
+            // 获取邵卡牌的详细描述
+            function getShaoCardDesc(card) {
+                switch(card.subType) {
+                    case 'liaoyuan':
+                        return '燎原挚焰\n3~7【命中时】对目标施加2层烧伤\n8~20【命中时】对目标施加2层烧伤';
+                    case 'chongtian':
+                        return '冲天烈火\n3~8【命中时】对目标施加1层烧伤';
+                    case 'yelong':
+                        return '烨龍烈斩\n5~8【命中时】对目标施加2层烧伤';
+                    case 'bixi':
+                        return '贔屭負礎\n7~10【命中时】下一幕中使对面获得2层烧伤';
+                    case 'chiwen':
+                        return '螭吻吞脊\n5~9【命中时】对双方施加3层烧伤\n5~9【命中时】对双方施加3层烧伤';
+                    case 'rexue':
+                        return '热血沸腾\n7~11【命中时】对目标施加1层烧伤(重复2次)\n6~11【命中时】对目标施加1层烧伤(重复2次)';
+                    case 'suanni':
+                        return '狻猊騰雲\n15~28【命中时】对敌方施加2层烧伤';
+                    case 'bi\'an':
+                        return '狴犴爭訟\n6~20点防御【成功防御时】让对面获得5层烧伤';
+                    case 'pulao':
+                        return '蒲牢鳴鍾\n回复10~20点血量';
+                    default:
+                        return card.name;
+                }
+            }
+
+            function generateShaoCard() {
+                const shaoCards = [
+                    {
+                        type: 'shao', 
+                        subType: 'liaoyuan',
+                        name: '燎原挚焰',
+                        range1: [3,7],
+                        range2: [8,20],
+                        burn: 2
+                    },
+                    {
+                        type: 'shao', 
+                        subType: 'chongtian',
+                        name: '冲天烈火',
+                        range: [3,8],
+                        burn: 1
+                    },
+                    {
+                        type: 'shao', 
+                        subType: 'yelong',
+                        name: '烨龍烈斩',
+                        range: [5,8],
+                        burn: 2
+                    },
+                    {
+                        type: 'shao', 
+                        subType: 'bixi',
+                        name: '贔屭負礎',
+                        range: [7,10],
+                        nextBurn: 2
+                    },
+                    {
+                        type: 'shao', 
+                        subType: 'chiwen',
+                        name: '螭吻吞脊',
+                        range1: [5,9],
+                        range2: [5,9],
+                        burnBoth: 3
+                    },
+                    {
+                        type: 'shao', 
+                        subType: 'rexue',
+                        name: '热血沸腾',
+                        range1: [7,11],
+                        range2: [6,11],
+                        burn: 1,
+                        repeat: 2
+                    },
+                    {
+                        type: 'shao', 
+                        subType: 'suanni',
+                        name: '狻猊騰雲',
+                        range: [15,28],
+                        burn: 2
+                    },
+                    {
+                        type: 'shao', 
+                        subType: 'bi\'an',
+                        name: '狴犴爭訟',
+                        range: [6,20],
+                        defBurn: 5
+                    },
+                    {
+                        type: 'shao', 
+                        subType: 'pulao',
+                        name: '蒲牢鳴鍾',
+                        range: [10,20],
+                        heal: true
+                    }
+                ];
+                return shaoCards[Math.floor(Math.random() * shaoCards.length)];
+            }
+
+            function generateBasicCard() {
+                const rand = Math.random();
+                if (rand < 0.06) {
+                    const legendRand = Math.random();
+                    if (legendRand < 0.5) {
+                        return { type: 'legend', name: '命运审判' };
+                    } else {
+                        return { type: 'purify', name: '净化' };
+                    }
+                }
+                const types = ['attack', 'defend', 'heal', 'burn', 'dice'];
+                const type = types[Math.floor(Math.random() * types.length)];
+                switch(type) {
+                    case 'attack':
+                        return { type: 'attack', point: Math.floor(Math.random()*11)+5, name: '攻击' };
+                    case 'defend':
+                        return { type: 'defend', point: Math.floor(Math.random()*9)+4, name: '防御' };
+                    case 'heal':
+                        return { type: 'heal', point: Math.floor(Math.random()*13)+8, name: '回血' };
+                    case 'burn':
+                        return { type: 'burn', point: Math.floor(Math.random()*5)+2, name: '烧伤' };
+                    case 'dice':
+                        const min = Math.floor(Math.random()*2)+1;
+                        const max = min + Math.floor(Math.random()*3)+1;
+                        const rolls = Math.floor(Math.random()*2)+2;
+                        return { type: 'dice', min, max, rolls, name: '骰子' };
+                }
+            }
+
+            function generateCard(isPlayer = true) {
+                if (!isPlayer) return generateBasicCard();
+                if (game.selectedRole === 'shao') return generateShaoCard();
+                return generateBasicCard();
+            }
+
+            function renderCard(card, isPlayable = true) {
+                const cardEl = document.createElement('button');
+                cardEl.className = `card ${card.type === 'shao' ? 'shao-card' : `${card.type}-card`}`;
+                cardEl.disabled = !isPlayable;
+                
+                // 邵卡牌特殊渲染
+                if (card.type === 'shao') {
+                    const desc = getShaoCardDesc(card);
+                    cardEl.innerHTML = `
+                        <div class="card-name">${card.name}</div>
+                        <div class="card-details">${desc}</div>
+                    `;
                 } else {
-                    return { type: 'purify', name: '净化' };
+                    let numText = '';
+                    if (card.type === 'legend' || card.type === 'purify') {
+                        numText = '???';
+                    } else if (card.type === 'dice') {
+                        numText = `${card.min}-${card.max}×${card.rolls}`;
+                    } else {
+                        numText = card.point;
+                    }
+                    cardEl.innerHTML = `<div class="card-number">${numText}</div><div class="card-type">${card.name}</div>`;
                 }
+                
+                if (isPlayable) cardEl.addEventListener('click', () => playCard(card));
+                return cardEl;
             }
-            
-            // 92%普通卡
-            const types = ['attack', 'defend', 'heal', 'burn', 'dice'];
-            const type = types[Math.floor(Math.random() * types.length)];
-            
-            switch(type) {
-                case 'attack':
-                    return { type: 'attack', point: Math.floor(Math.random()*20)+1, name: '攻击' };
-                case 'defend':
-                    return { type: 'defend', point: Math.floor(Math.random()*18)+2, name: '防御' };
-                case 'heal':
-                    return { type: 'heal', point: Math.floor(Math.random()*30)+1, name: '回血' };
-                case 'burn':
-                    return { type: 'burn', point: Math.floor(Math.random()*8)+3, name: '烧伤' };
-                case 'dice':
-                    const min = Math.floor(Math.random()*3)+1;
-                    const max = min + Math.floor(Math.random()*5)+2;
-                    const rolls = Math.floor(Math.random()*3)+2;
-                    return { type: 'dice', min, max, rolls, name: '骰子' };
+
+            function renderHand() {
+                handCardsEl.innerHTML = '';
+                game.currentHand.forEach(card => handCardsEl.appendChild(renderCard(card, true)));
             }
-        }
 
-        // 渲染卡牌
-        function renderCard(card, isPlayable = true) {
-            const cardEl = document.createElement('button');
-            cardEl.className = `card ${card.type}-card`;
-            cardEl.disabled = !isPlayable;
-            
-            let numText = '';
-            if (card.type === 'legend' || card.type === 'purify') {
-                numText = '???';
-            } else if (card.type === 'dice') {
-                numText = `${card.min}-${card.max}×${card.rolls}`;
-            } else {
-                numText = card.point;
+            function renderPlayedCard(area, card) {
+                area.innerHTML = '';
+                if (card) area.appendChild(renderCard(card, false));
             }
-            
-            cardEl.innerHTML = `
-                <div class="card-number">${numText}</div>
-                <div class="card-type">${card.name}</div>
-            `;
-            
-            if (isPlayable) cardEl.addEventListener('click', () => playCard(card));
-            return cardEl;
-        }
 
-        // 渲染手牌
-        function renderHand() {
-            handCardsEl.innerHTML = '';
-            game.currentHand.forEach(card => handCardsEl.appendChild(renderCard(card, true)));
-        }
-
-        // 渲染打出的牌
-        function renderPlayedCard(area, card) {
-            area.innerHTML = '';
-            if (card) area.appendChild(renderCard(card, false));
-        }
-
-        // 更新全部界面
-        function updateUI() {
-            playerHpEl.textContent = game.playerHp;
-            enemyHpEl.textContent = game.enemyHp;
-            playerHpFill.style.width = `${Math.max(0, game.playerHp)}%`;
-            enemyHpFill.style.width = `${Math.max(0, game.enemyHp)}%`;
-            
-            playerDefEl.textContent = `🛡️ 护盾: ${game.playerDef}`;
-            enemyDefEl.textContent = `🛡️ 护盾: ${game.enemyDef}`;
-            playerBurnEl.textContent = `🔥 烧伤: ${game.playerBurn}`;
-            enemyBurnEl.textContent = `🔥 烧伤: ${game.enemyBurn}`;
-        }
-
-        // 检查游戏结束
-        function checkGameOver() {
-            if (game.playerHp <= 0) {
-                game.isGameOver = true;
-                gameOverEl.textContent = '💀 你输了！';
-            } else if (game.enemyHp <= 0) {
-                game.isGameOver = true;
-                gameOverEl.textContent = '🎉 你赢了！';
+            function updateUI() {
+                playerHpEl.textContent = game.playerHp;
+                enemyHpEl.textContent = game.enemyHp;
+                const playerMaxHp = game.selectedRole === 'shao' ? 70 : 100;
+                const enemyMaxHp = game.selectedRole === 'shao' ? 300 : 100;
+                playerHpFill.style.width = `${Math.max(0, (game.playerHp / playerMaxHp) * 100)}%`;
+                enemyHpFill.style.width = `${Math.max(0, (game.enemyHp / enemyMaxHp) * 100)}%`;
+                playerDefEl.textContent = `🛡️ 护盾: ${game.playerDef}`;
+                enemyDefEl.textContent = `🛡️ 护盾: ${game.enemyDef}`;
+                playerBurnEl.textContent = `🔥 烧伤: ${game.playerBurn}`;
+                enemyBurnEl.textContent = `🔥 烧伤: ${game.enemyBurn}`;
             }
-            if (game.isGameOver) startRoundBtn.disabled = true;
-            return game.isGameOver;
-        }
 
-        // 开始回合
-        function startRound() {
-            if (game.isGameOver) return;
-            
-            game.playerDef = game.enemyDef = 0;
-            
-            game.playerCard = game.enemyCard = null;
-            playerPlayArea.innerHTML = '<div style="color:#aaa">选择手牌</div>';
-            enemyPlayArea.innerHTML = '<div style="color:#aaa">敌方抽牌中...</div>';
-            roundInfo.textContent = '请选择一张卡牌打出！';
-            
-            game.currentHand = Array(5).fill(0).map(() => generateCard());
-            renderHand();
-            startRoundBtn.disabled = true;
-            updateUI();
-        }
-
-        // 玩家出牌
-        function playCard(card) {
-            game.playerCard = card;
-            renderPlayedCard(playerPlayArea, card);
-            handCardsEl.innerHTML = '<div style="color:#aaa">已出牌，等待敌方...</div>';
-            setTimeout(enemyPlay, 700);
-        }
-
-        // 敌方出牌
-        function enemyPlay() {
-            game.enemyCard = generateCard();
-            renderPlayedCard(enemyPlayArea, game.enemyCard);
-            setTimeout(calculateRound, 700);
-        }
-
-        // 核心结算
-        function calculateRound() {
-            const p = game.playerCard;
-            const e = game.enemyCard;
-            let msg = '';
-
-            // =============== 玩家卡牌效果 ===============
-            if (p.type === 'heal') {
-                game.playerHp = Math.min(100, game.playerHp + p.point);
-                msg += `❤️ 你恢复 ${p.point} 血量！`;
-            }
-            if (p.type === 'defend') {
-                game.playerDef += p.point;
-                msg += `🛡️ 获得 ${p.point} 点护盾！`;
-            }
-            if (p.type === 'burn') {
-                game.enemyBurn = Math.max(game.enemyBurn, p.point);
-                msg += `🔥 敌人获得 ${p.point} 层烧伤！`;
-            }
-            if (p.type === 'dice') {
-                let total = 0, details = [];
-                for(let i=0;i<p.rolls;i++){
-                    const rng = Math.floor(Math.random()*(p.max-p.min+1)) + p.min;
-                    details.push(rng); total+=rng;
+            function checkGameOver() {
+                if (game.playerHp <= 0) {
+                    game.isGameOver = true;
+                    gameOverEl.textContent = '💀 你输了！';
+                } else if (game.enemyHp <= 0) {
+                    game.isGameOver = true;
+                    gameOverEl.textContent = '🎉 你赢了！';
                 }
-                game.enemyHp -= total;
-                msg += `🎲 骰子伤害(${details.join('+')})=${total}！`;
+                if (game.isGameOver) startRoundBtn.disabled = true;
+                return game.isGameOver;
             }
-            // 神话卡：命运审判
-            if (p.type === 'legend') {
-                const luck = Math.random();
-                if (luck < 0.1) {
-                    game.enemyHp = 0;
-                    msg += '⚡【命运审判】成功！直接秒杀敌人！';
-                } else {
-                    game.playerHp -= 80;
-                    msg += '💀【命运审判】失败！自身损失80点血量！';
+
+            function startRound() {
+                if (game.isGameOver || !game.selectedRole) return;
+                game.playerDef = game.enemyDef = 0;
+                game.playerCard = game.enemyCard = null;
+                playerPlayArea.innerHTML = '<div style="color:#aaa">选择手牌</div>';
+                enemyPlayArea.innerHTML = '<div style="color:#aaa">敌方抽牌中...</div>';
+                roundInfo.textContent = '请选择一张卡牌打出！';
+                if (game.enemyNextBurn > 0) {
+                    game.enemyBurn += game.enemyNextBurn;
+                    roundInfo.textContent += `\n🔥 敌方触发贔屭負礎，获得${game.enemyNextBurn}层烧伤！`;
+                    game.enemyNextBurn = 0;
                 }
-            }
-            // 新增：净化卡 - 清除烧伤+回血20
-            if (p.type === 'purify') {
-                game.playerBurn = 0;
-                game.playerHp = Math.min(100, game.playerHp + 20);
-                msg += '✅【净化】成功！清除所有烧伤，恢复20血量！';
-            }
-
-            // =============== 敌方卡牌效果 ===============
-            if (e.type === 'heal') {
-                game.enemyHp = Math.min(100, game.enemyHp + e.point);
-                msg += `❤️ 敌人恢复 ${e.point} 血量！`;
-            }
-            if (e.type === 'defend') {
-                game.enemyDef += e.point;
-                msg += `🛡️ 敌人获得 ${e.point} 点护盾！`;
-            }
-            if (e.type === 'burn') {
-                game.playerBurn = Math.max(game.playerBurn, e.point);
-                msg += `🔥 你获得 ${e.point} 层烧伤！`;
-            }
-            if (e.type === 'dice') {
-                let total = 0, details = [];
-                for(let i=0;i<e.rolls;i++){
-                    const rng = Math.floor(Math.random()*(e.max-e.min+1)) + e.min;
-                    details.push(rng); total+=rng;
-                }
-                game.playerHp -= total;
-                msg += `🎲 受到骰子伤害(${details.join('+')})=${total}！`;
-            }
-            if (e.type === 'legend') {
-                const luck = Math.random();
-                if (luck < 0.1) {
-                    game.playerHp = 0;
-                    msg += '⚡敌人使用【命运审判】秒杀你！';
-                } else {
-                    game.enemyHp -= 80;
-                    msg += '💀敌人【命运审判】失败，自扣80血！';
-                }
-            }
-            if (e.type === 'purify') {
-                game.enemyBurn = 0;
-                game.enemyHp = Math.min(100, game.enemyHp + 20);
-                msg += '✅敌人使用【净化】清除烧伤+回血20！';
-            }
-
-            // 基础攻击拼点
-            const pAtk = p.type === 'attack' ? p.point : 0;
-            const eAtk = e.type === 'attack' ? e.point : 0;
-
-            const pTaken = Math.max(0, eAtk - game.playerDef);
-            const eTaken = Math.max(0, pAtk - game.enemyDef);
-
-            game.playerHp -= pTaken;
-            game.enemyHp -= eTaken;
-
-            if (pTaken > 0) msg += `⚔️ 受到 ${pTaken} 点伤害！`;
-            if (eTaken > 0) msg += `⚔️ 敌人受到 ${eTaken} 点伤害！`;
-
-            roundInfo.textContent = msg;
-            updateUI();
-            if (checkGameOver()) return;
-
-            // 回合结束 → 烧伤结算
-            setTimeout(applyBurnEffect, 1300);
-        }
-
-        // 烧伤机制：盾抵挡烧伤
-        function applyBurnEffect() {
-            let burnMsg = '';
-            
-            if (game.playerBurn > 0) {
-                const burnDmg = game.playerBurn;
-                const actualDmg = Math.max(0, burnDmg - game.playerDef);
-                game.playerDef = Math.max(0, game.playerDef - burnDmg);
-                game.playerHp -= actualDmg;
-                burnMsg += `🔥 烧伤${burnDmg}点，盾抵挡${burnDmg-actualDmg}，受到${actualDmg}伤害！`;
-                game.playerBurn = Math.max(0, game.playerBurn - 1);
-            }
-            
-            if (game.enemyBurn > 0) {
-                const burnDmg = game.enemyBurn;
-                const actualDmg = Math.max(0, burnDmg - game.enemyDef);
-                game.enemyDef = Math.max(0, game.enemyDef - burnDmg);
-                game.enemyHp -= actualDmg;
-                burnMsg += `🔥 敌人烧伤${burnDmg}点，盾抵挡${burnDmg-actualDmg}，受到${actualDmg}伤害！`;
-                game.enemyBurn = Math.max(0, game.enemyBurn - 1);
-            }
-
-            if (burnMsg) {
-                roundInfo.textContent += '\n' + burnMsg;
+                game.currentHand = Array(5).fill(0).map(() => generateCard(true));
+                renderHand();
+                startRoundBtn.disabled = true;
                 updateUI();
             }
 
-            if (checkGameOver()) return;
+            function playCard(card) {
+                game.playerCard = card;
+                renderPlayedCard(playerPlayArea, card);
+                handCardsEl.innerHTML = '<div style="color:#aaa">已出牌，等待敌方...</div>';
+                setTimeout(enemyPlay, 700);
+            }
 
-            setTimeout(() => {
+            function enemyPlay() {
+                game.enemyCard = generateCard(false);
+                renderPlayedCard(enemyPlayArea, game.enemyCard);
+                setTimeout(calculateRound, 700);
+            }
+
+            function calculateShaoCardEffect(card, msg) {
+                // 适配邵角色的敌方无烧伤上限逻辑
+                const getEnemyBurnLimit = () => game.selectedRole === 'shao' ? Infinity : 8;
+                
+                switch(card.subType) {
+                    case 'liaoyuan':
+                        const dmg1 = Math.floor(Math.random() * (card.range1[1] - card.range1[0] + 1)) + card.range1[0];
+                        const dmg2 = Math.floor(Math.random() * (card.range2[1] - card.range2[0] + 1)) + card.range2[0];
+                        const totalDmg = dmg1 + dmg2;
+                        const taken1 = Math.max(0, dmg1 - game.enemyDef);
+                        const taken2 = Math.max(0, dmg2 - Math.max(0, game.enemyDef - dmg1));
+                        game.enemyHp -= (taken1 + taken2);
+                        // 燎原挚焰：分两次加烧伤（每次2层，共4层）
+                        const liaoyuanBurnTotal = card.burn * 2;
+                        game.enemyBurn = Math.min(getEnemyBurnLimit(), game.enemyBurn + liaoyuanBurnTotal);
+                        msg += `🔥 燎原挚焰：${dmg1}+${dmg2}=${totalDmg}伤害，敌方+${liaoyuanBurnTotal}层烧伤！`;
+                        // 触发邵命中台词
+                        showShaoHitLine();
+                        break;
+                    case 'chongtian':
+                        const dmgChong = Math.floor(Math.random() * (card.range[1] - card.range[0] + 1)) + card.range[0];
+                        const takenChong = Math.max(0, dmgChong - game.enemyDef);
+                        game.enemyHp -= takenChong;
+                        game.enemyBurn = Math.min(getEnemyBurnLimit(), game.enemyBurn + card.burn);
+                        msg += `🔥 冲天烈火：${dmgChong}伤害，敌方+${card.burn}层烧伤！`;
+                        // 触发邵命中台词
+                        showShaoHitLine();
+                        break;
+                    case 'yelong':
+                        const dmgYe = Math.floor(Math.random() * (card.range[1] - card.range[0] + 1)) + card.range[0];
+                        const takenYe = Math.max(0, dmgYe - game.enemyDef);
+                        game.enemyHp -= takenYe;
+                        game.enemyBurn = Math.min(getEnemyBurnLimit(), game.enemyBurn + card.burn);
+                        msg += `🔥 烨龍烈斩：${dmgYe}伤害，敌方+${card.burn}层烧伤！`;
+                        // 触发邵命中台词
+                        showShaoHitLine();
+                        break;
+                    case 'bixi':
+                        const dmgBi = Math.floor(Math.random() * (card.range[1] - card.range[0] + 1)) + card.range[0];
+                        const takenBi = Math.max(0, dmgBi - game.enemyDef);
+                        game.enemyHp -= takenBi;
+                        game.enemyNextBurn += card.nextBurn;
+                        msg += `🔥 贔屭負礎：${dmgBi}伤害，敌方下回合+${card.nextBurn}层烧伤！`;
+                        // 触发邵命中台词
+                        showShaoHitLine();
+                        break;
+                    case 'chiwen':
+                        const dmgChi1 = Math.floor(Math.random() * (card.range1[1] - card.range1[0] + 1)) + card.range1[0];
+                        const dmgChi2 = Math.floor(Math.random() * (card.range2[1] - card.range2[0] + 1)) + card.range2[0];
+                        const totalChi = dmgChi1 + dmgChi2;
+                        const takenChi1 = Math.max(0, dmgChi1 - game.enemyDef);
+                        const takenChi2 = Math.max(0, dmgChi2 - Math.max(0, game.enemyDef - dmgChi1));
+                        game.enemyHp -= (takenChi1 + takenChi2);
+                        // 螭吻吞脊：重复加烧伤（3层×2次）
+                        const chiwenBurnTotal = card.burnBoth * 2;
+                        game.playerBurn = Math.min(8, game.playerBurn + chiwenBurnTotal); // 玩家始终有8层上限
+                        game.enemyBurn = Math.min(getEnemyBurnLimit(), game.enemyBurn + chiwenBurnTotal);
+                        msg += `🔥 螭吻吞脊：${dmgChi1}+${dmgChi2}=${totalChi}伤害，双方各+${chiwenBurnTotal}层烧伤！`;
+                        // 触发邵命中台词
+                        showShaoHitLine();
+                        break;
+                    case 'rexue':
+                        const dmgRe1 = Math.floor(Math.random() * (card.range1[1] - card.range1[0] + 1)) + card.range1[0];
+                        const dmgRe2 = Math.floor(Math.random() * (card.range2[1] - card.range2[0] + 1)) + card.range2[0];
+                        const totalRe = dmgRe1 + dmgRe2;
+                        const takenRe1 = Math.max(0, dmgRe1 - game.enemyDef);
+                        const takenRe2 = Math.max(0, dmgRe2 - Math.max(0, game.enemyDef - dmgRe1));
+                        game.enemyHp -= (takenRe1 + takenRe2);
+                        // 热血沸腾：按重复次数循环加烧伤
+                        let rexueBurnTotal = 0;
+                        for (let i = 0; i < card.repeat; i++) {
+                            game.enemyBurn = Math.min(getEnemyBurnLimit(), game.enemyBurn + card.burn);
+                            rexueBurnTotal += card.burn;
+                        }
+                        msg += `🔥 热血沸腾：${dmgRe1}+${dmgRe2}=${totalRe}伤害，敌方+${rexueBurnTotal}层烧伤！`;
+                        // 触发邵命中台词
+                        showShaoHitLine();
+                        break;
+                    case 'suanni':
+                        const dmgSuan = Math.floor(Math.random() * (card.range[1] - card.range[0] + 1)) + card.range[0];
+                        const takenSuan = Math.max(0, dmgSuan - game.enemyDef);
+                        game.enemyHp -= takenSuan;
+                        game.enemyBurn = Math.min(getEnemyBurnLimit(), game.enemyBurn + card.burn);
+                        msg += `🔥 狻猊騰雲：${dmgSuan}伤害，敌方+${card.burn}层烧伤！`;
+                        // 触发邵命中台词
+                        showShaoHitLine();
+                        break;
+                    case 'bi\'an':
+                        const defVal = Math.floor(Math.random() * (card.range[1] - card.range[0] + 1)) + card.range[0];
+                        game.playerDef += defVal;
+                        msg += `🛡️ 狴犴爭訟：获得${defVal}点护盾！`;
+                        game.biAnDefBurn = card.defBurn;
+                        // 触发邵台词（防御成功也算命中）
+                        showShaoHitLine();
+                        break;
+                    case 'pulao':
+                        const healVal = Math.floor(Math.random() * (card.range[1] - card.range[0] + 1)) + card.range[0];
+                        const playerMaxHp = game.selectedRole === 'shao' ? 70 : 100;
+                        game.playerHp = Math.min(playerMaxHp, game.playerHp + healVal);
+                        msg += `❤️ 蒲牢鳴鍾：恢复${healVal}点血量！`;
+                        // 触发邵台词
+                        showShaoHitLine();
+                        break;
+                }
+                return msg;
+            }
+
+            function calculateRound() {
+                const p = game.playerCard;
+                const e = game.enemyCard;
+                let msg = '';
+                game.biAnDefBurn = 0;
+
+                if (p.type === 'shao') {
+                    msg = calculateShaoCardEffect(p, msg);
+                } else {
+                    if (p.type === 'heal') {
+                        const playerMaxHp = game.selectedRole === 'shao' ? 70 : 100;
+                        game.playerHp = Math.min(playerMaxHp, game.playerHp + p.point);
+                        msg += `❤️ 你恢复 ${p.point} 血量！`;
+                    }
+                    if (p.type === 'defend') {
+                        game.playerDef += p.point;
+                        msg += `🛡️ 获得 ${p.point} 点护盾！`;
+                    }
+                    if (p.type === 'burn') {
+                        const burnLimit = game.selectedRole === 'shao' ? Infinity : 8;
+                        game.enemyBurn = Math.min(burnLimit, game.enemyBurn + p.point);
+                        msg += `🔥 敌人获得 ${p.point} 层烧伤（当前${game.enemyBurn}层）！`;
+                    }
+                    if (p.type === 'dice') {
+                        let total = 0, details = [];
+                        for(let i=0;i<p.rolls;i++){
+                            const rng = Math.floor(Math.random()*(p.max-p.min+1)) + p.min;
+                            details.push(rng); total+=rng;
+                        }
+                        game.enemyHp -= total;
+                        msg += `🎲 骰子伤害(${details.join('+')})=${total}！`;
+                    }
+                    if (p.type === 'legend') {
+                        const luck = Math.random();
+                        if (luck < 0.08) {
+                            game.enemyHp = Math.max(10, game.enemyHp - 90);
+                            msg += '⚡【命运审判】触发高伤！敌人剩余10血！';
+                        } else if (luck < 0.3) {
+                            game.enemyHp = Math.max(1, game.enemyHp - 50);
+                            msg += '⚡【命运审判】触发中伤！敌人-50血！';
+                        } else {
+                            game.playerHp = Math.max(1, game.playerHp - 30);
+                            msg += '⚡【命运审判】反噬！你-30血！';
+                        }
+                    }
+                    if (p.type === 'purify') {
+                        game.playerBurn = 0;
+                        msg += '✨【净化】清除所有烧伤效果！';
+                    }
+                    if (p.type === 'attack') {
+                        const taken = Math.max(0, p.point - game.enemyDef);
+                        game.enemyHp -= taken;
+                        msg += `⚔️ 你攻击造成 ${taken} 点伤害（原${p.point} - 敌方护盾${game.enemyDef}）！`;
+                    }
+                }
+
+                if (e.type === 'heal') {
+                    game.enemyHp = Math.min(game.selectedRole === 'shao' ? 300 : 100, game.enemyHp + e.point);
+                    msg += `\n❤️ 敌方恢复 ${e.point} 血量！`;
+                }
+                if (e.type === 'defend') {
+                    game.enemyDef += e.point;
+                    msg += `\n🛡️ 敌方获得 ${e.point} 点护盾！`;
+                }
+                if (e.type === 'burn') {
+                    game.playerBurn = Math.min(8, game.playerBurn + e.point);
+                    msg += `\n🔥 你获得 ${e.point} 层烧伤（当前${game.playerBurn}层）！`;
+                }
+                if (e.type === 'dice') {
+                    let total = 0, details = [];
+                    for(let i=0;i<e.rolls;i++){
+                        const rng = Math.floor(Math.random()*(e.max-e.min+1)) + e.min;
+                        details.push(rng); total+=rng;
+                    }
+                    const taken = Math.max(0, total - game.playerDef);
+                    game.playerHp -= taken;
+                    msg += `\n🎲 敌方骰子伤害(${details.join('+')})=${total}，你受到${taken}点伤害！`;
+                }
+                if (e.type === 'legend') {
+                    const luck = Math.random();
+                    if (luck < 0.1) {
+                        game.playerHp = Math.max(1, game.playerHp - 90);
+                        msg += '\n⚡【命运审判】敌方触发高伤！你剩余1血！';
+                    } else if (luck < 0.3) {
+                        game.playerHp = Math.max(1, game.playerHp - 50);
+                        msg += '\n⚡【命运审判】敌方触发中伤！你-50血！';
+                    } else {
+                        game.enemyHp = Math.max(1, game.enemyHp - 30);
+                        msg += '\n⚡【命运审判】敌方反噬！敌人-30血！';
+                    }
+                }
+                if (e.type === 'purify') {
+                    game.enemyBurn = 0;
+                    msg += '\n✨ 敌方【净化】清除所有烧伤效果！';
+                }
+                if (e.type === 'attack') {
+                    const taken = Math.max(0, e.point - game.playerDef);
+                    game.playerHp -= taken;
+                    msg += `\n⚔️ 敌方攻击造成 ${taken} 点伤害（原${e.point} - 你的护盾${game.playerDef}）！`;
+                }
+
+                // 处理狴犴爭訟防御成功加烧伤
+                if (game.biAnDefBurn > 0 && game.playerDef > 0) {
+                    const burnLimit = game.selectedRole === 'shao' ? Infinity : 8;
+                    game.enemyBurn = Math.min(burnLimit, game.enemyBurn + game.biAnDefBurn);
+                    msg += `\n🛡️ 狴犴爭訟防御成功！敌方+${game.biAnDefBurn}层烧伤！`;
+                }
+
+                // 处理烧伤伤害
+                if (game.playerBurn > 0) {
+                    const burnDmg = Math.min(game.playerHp - 1, game.playerBurn * 5);
+                    game.playerHp -= burnDmg;
+                    msg += `\n🔥 你受到 ${burnDmg} 点烧伤伤害（${game.playerBurn}层）！`;
+                }
+                if (game.enemyBurn > 0) {
+                    const burnDmg = Math.min(game.enemyHp - 1, game.enemyBurn * 5);
+                    game.enemyHp -= burnDmg;
+                    msg += `\n🔥 敌方受到 ${burnDmg} 点烧伤伤害（${game.enemyBurn}层）！`;
+                }
+
+                roundInfo.textContent = msg;
+                updateUI();
+
+                if (!checkGameOver()) {
+                    startRoundBtn.disabled = false;
+                }
+            }
+
+            // 角色选择事件
+            defaultRoleBtn.addEventListener('click', function() {
+                defaultRoleBtn.classList.add('active');
+                shaoRoleBtn.classList.remove('active');
+                game.selectedRole = 'default';
+                game.playerHp = 100;
+                game.enemyHp = 100;
+                game.isGameOver = false;
+                gameOverEl.textContent = '';
                 startRoundBtn.disabled = false;
-                roundInfo.textContent += '\n→ 点击【开始回合】继续';
-            }, 1000);
-        }
+                updateUI();
+                roundInfo.textContent = '已选择默认角色！点击【开始回合】开始游戏！';
+            });
 
-        // 重置游戏
-        function resetGame() {
-            game.playerHp = game.enemyHp = 100;
-            game.playerDef = game.enemyDef = 0;
-            game.playerBurn = game.enemyBurn = 0;
-            game.isGameOver = false;
-            game.currentHand = [];
-            
-            handCardsEl.innerHTML = '';
-            playerPlayArea.innerHTML = '<div style="color:#aaa">选择手牌打出</div>';
-            enemyPlayArea.innerHTML = '<div style="color:#aaa">等待出牌</div>';
-            roundInfo.textContent = '点击【开始回合】抽牌！';
-            gameOverEl.textContent = '';
-            startRoundBtn.disabled = false;
+            shaoRoleBtn.addEventListener('click', function() {
+                shaoRoleBtn.classList.add('active');
+                defaultRoleBtn.classList.remove('active');
+                game.selectedRole = 'shao';
+                game.playerHp = 70;
+                game.enemyHp = 300; // 邵角色模式敌方血量改为300
+                game.isGameOver = false;
+                gameOverEl.textContent = '';
+                startRoundBtn.disabled = false;
+                updateUI();
+                // 显示战斗开始逐字文本
+                typeWriterEffect(battleStartText, 50, () => {
+                    roundInfo.textContent = '已选择角色：邵！敌方血量300，无烧伤上限！点击【开始回合】开始游戏！';
+                });
+            });
+
+            // 按钮事件
+            startRoundBtn.addEventListener('click', startRound);
+            resetBtn.addEventListener('click', function() {
+                location.reload();
+            });
+
+            // 初始化UI
             updateUI();
-        }
-
-        // 绑定事件
-        startRoundBtn.addEventListener('click', startRound);
-        resetBtn.addEventListener('click', resetGame);
-        updateUI();
+        });
     </script>
 </body>
 </html>
